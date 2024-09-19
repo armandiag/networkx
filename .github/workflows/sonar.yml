@@ -1,0 +1,42 @@
+name: SonarQube Analysis
+
+# This workflow triggers on push or pull request to main and feature branches
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonarQube:
+    runs-on: windows-latest  # Use Windows runner since you are running on Windows
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up JDK (SonarQube requires JDK)
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'  # Can use adopt or zulu, etc.
+          java-version: '11'
+
+      # Step 3: Run SonarQube Scanner with secrets
+      - name: SonarQube Scan
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.language=python \
+            -Dsonar.sourceEncoding=UTF-8
+
+      # Step 4 (Optional): Send a notification that the scan is complete
+      - name: Notify
+        run: echo "SonarQube analysis completed."
